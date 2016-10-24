@@ -1,5 +1,9 @@
 <?php
 $client_ip = $_SERVER['REMOTE_ADDR'];
+$browser = strpos($_SERVER['HTTP_USER_AGENT'],"iPhone");
+    if ($browser == true){
+    $browser = 'iphone';
+  }
 ?>
 <!DOCTYPE html>
 <html>
@@ -16,10 +20,10 @@ $client_ip = $_SERVER['REMOTE_ADDR'];
     </script>
     <script src="https://code.jquery.com/jquery-3.1.1.min.js">
     </script>
+    <script src="https://use.fontawesome.com/bb47d90cfb.js"></script>
     <script src="http://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="crossorigin="anonymous"></script>
     <!-- fonts -->
-    <link href="https://fonts.googleapis.com/css?family=Raleway" rel=
-    "stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Kameron" rel="stylesheet">
     <link href="vis-style.css" rel="stylesheet" type="text/css">
     <meta charset="utf-8">
 </head>
@@ -36,9 +40,10 @@ $client_ip = $_SERVER['REMOTE_ADDR'];
 			<option value="total_med_medicare_allowed_amt">total_med_medicare_allowed_amt</option>
 			<option value="total_med_medicare_payment_amt">total_med_medicare_payment_amt</option> 
 			<option value="population">population</option> 
-  		</select>  
+  		</select>
+  		<input class = "filter-button" id = "per-capita" type="checkbox">per capita</input>  
     	</div>
-    	<input class = "filter-button" id = "per-capita" type="checkbox">per capita</input>
+    	<i class="fa fa-info" id="about" aria-hidden="true"></i>
     	<br>
         <!--injection point for reference color bar -->
         <div id="reference-bar"></div>
@@ -47,7 +52,13 @@ $client_ip = $_SERVER['REMOTE_ADDR'];
         <div id="map"></div>
         
         <!-- injection for ractive generated information on mouseover -->
-        <div id = "info-container">
+        <?php if($browser == 'iphone'){
+        		echo "<br><div id = \"phone-info-container\">";
+        		}
+        	  else{
+        	  	echo "<div id = \"info-container\">";
+        	  } 
+        ?>
     	<div id="info"></div>
     	<br>
     	<div id = "state-selector">
@@ -97,6 +108,8 @@ $client_ip = $_SERVER['REMOTE_ADDR'];
                 .style("top", function(d, i) {
                     return y(d.name) + "px";
                 });
+           d3.select("#menu-container")
+             .style("width", width-margin*10+"px");
 
             space.append("canvas")
                 .attr("width", width)
@@ -259,9 +272,17 @@ $client_ip = $_SERVER['REMOTE_ADDR'];
                 }
                 var updateMin = stats_obj["min"],
                 	updateMax = stats_obj["max"];
+                if (percapita && axis == "number_cms_entries"){
+                	updateMin = fix(updateMin);
+                	updateMax = fix(updateMax);
+                }
+                else{
+                	updateMin = formattedNumber(updateMin);
+                	updateMax = formattedNumber(updateMax);
+                }
                 if (dollar){
-                	updateMin = "$"+formattedNumber(updateMin);
-                	updateMax = "$"+formattedNumber(updateMax);
+                	updateMin = "$"+updateMin;
+                	updateMax = "$"+updateMax;
                 }
                 ractive_reference.set("min",updateMin);
                 ractive_reference.set("max",updateMax);
@@ -299,7 +320,7 @@ $client_ip = $_SERVER['REMOTE_ADDR'];
 			    if (percapita) {
 			        suffix = global_percapita_suffix;
 			    }
-			    var population = d3.select("[name=\"" + name + "\"]").attr("population" + suffix),
+			    var population = d3.select("[name=\"" + name + "\"]").attr("population"),
 			        total_med_submitted_chrg_amt = d3.select("[name=\"" + name + "\"]").attr("total_med_submitted_chrg_amt" + suffix),
 			        total_med_medicare_allowed_amt = d3.select("[name=\"" + name + "\"]").attr("total_med_medicare_allowed_amt" + suffix),
 			        total_med_medicare_payment_amt = d3.select("[name=\"" + name + "\"]").attr("total_med_medicare_payment_amt" + suffix),
@@ -486,7 +507,7 @@ $client_ip = $_SERVER['REMOTE_ADDR'];
         <!-- script to control information area. Ractive should go last. -->
     <script id="template" type='text/ractive'>
     <div class="table-title">
-    	<h3>Selection Information</h3>
+    	<h3>Selection Information<br>(CMS Aggregate Y2014)</h3>
     </div>
     <table class="table-fill">
     <thead>
@@ -545,6 +566,8 @@ $client_ip = $_SERVER['REMOTE_ADDR'];
     	d3.select("#per-capita").on("change",function(){
     		var checked = this.checked;
     		var selection = d3.select("#dropdown").property("value");
+    		var current_state = d3.select("#states-dropdown").property("value");
+    		updateInfo(current_state);
     		if (checked){
     			updateStates(selection, normalizedCmsValues);
     		}

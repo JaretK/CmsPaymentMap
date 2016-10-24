@@ -1,5 +1,5 @@
 body {
-    font-family: 'Raleway', sans-serif;
+    font-family: 'Kameron', serif;
 }
 #menu-container{
 	padding:5px;
@@ -12,6 +12,12 @@ select {
    height: 34px;
 
 } 
+#about{
+	position:relative;
+	left:0;
+	color: #001A57;
+	font-size:15px;
+}
 /*target Internet Explorer 9 and Internet Explorer 10:*/
 @media screen and (min-width:0\0) { 
     select {
@@ -19,6 +25,7 @@ select {
         padding: 5px;
     }
 }
+
 #graphic-container {
 	padding:10px;
     text-align: center;
@@ -31,6 +38,9 @@ select {
 	position:fixed;
 	right:0;
 	top:0;
+}
+#phone-info-container{
+	padding:10px;
 }
 #graphic-container div {
     display: inline-block;
@@ -47,6 +57,7 @@ select {
 #map{
 	padding-left:-50px;
 }
+
 /*RESPONSIVE CSS */
 #container {
     display: inline-block;
